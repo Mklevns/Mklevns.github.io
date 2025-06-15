@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to My Website</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f6f8fa;
+            color: #24292e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #d1d5da;
+            border-radius: 6px;
+            padding: 2rem;
+        }
+        h1 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.5rem;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 0.75rem;
+        }
+        a {
+            text-decoration: none;
+            color: #0366d6;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background-color: #f6f8fa;
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            border-radius: 3px;
+        }
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9em;
+            color: #586069;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>My GitHub Projects Website</h1>
+            <p>This is the main page of my website. Below you will find links to other pages within this repository.</p>
+        </header>
+
+        <main>
+            <h2>Navigation</h2>
+            <p>Here are the links to the other HTML files in my project:</p>
+            
+            <ul>
+                <li>
+                    <a href="about.html">Link to my About Page (about.html)</a>
+                </li>
+                <li>
+                    <a href="portfolio.html">Link to my Portfolio (portfolio.html)</a>
+                </li>
+                
+                <li>
+                    <a href="projects/project-alpha.html">Link to Project Alpha (inside a 'projects' folder)</a>
+                </li>
+                 <li>
+                    <a href="projects/project-beta.html">Link to Project Beta (also in the 'projects' folder)</a>
+                </li>
+
+                <li>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer">Link to GitHub (Opens in a new tab)</a>
+                </li>
+            </ul>
+
+            <hr>
+
+            <h3>How it Works</h3>
+            <p>Your GitHub repository file structure might look something like this for the links above to work correctly:</p>
+            <pre><code>
+your-repository/
+├── index.html       (This file)
+├── about.html
+├── portfolio.html
+└── projects/
+    ├── project-alpha.html
+    └── project-beta.html
+            </code></pre>
+        </main>
+
+        <footer class="footer">
+            <p>Hosted with ❤️ on GitHub Pages.</p>
+        </footer>
+    </div>
+
+</body>
+</html>
