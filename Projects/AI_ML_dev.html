@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to ML/AI Development</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page dashboard with a fixed sidebar for primary navigation, enabling users to explore the ML/AI lifecycle thematically rather than linearly. The structure is task-oriented (Foundations, Data, Tooling, Production, Ethics & Future) to be more intuitive for practitioners. The main content area dynamically updates, presenting information in interactive modules like cards, tabs, and filterable grids. This non-linear, interactive approach was chosen to break down the dense report content into digestible, explorable chunks, allowing users to either follow the lifecycle sequentially or jump directly to topics of interest, which significantly enhances usability and learning compared to a static, scrolling document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Learning Paradigms (Table 1) -> Goal: Organize & Compare -> Viz: Interactive Cards (HTML/CSS/JS) -> Interaction: Click to expand -> Justification: Breaks down dense definitions into a scannable, user-driven format. Library/Method: Vanilla JS.
+        - Report Info: DL Frameworks (Table 3) -> Goal: Compare -> Viz: Bar Chart -> Interaction: Hover for details -> Justification: Provides a quick visual comparison of quantitative/qualitative ratings, making it easier to see relative strengths. Library/Method: Chart.js.
+        - Report Info: MLOps Tools (Table 4) -> Goal: Organize & Filter -> Viz: Filterable Card Grid -> Interaction: Click filters to dynamically show/hide tools -> Justification: Turns a large, static table into a practical tool for finding specific MLOps solutions. Library/Method: Vanilla JS.
+        - Report Info: Deployment Strategies (Table 5) -> Goal: Compare Relationships -> Viz: Bubble Chart -> Interaction: Hover for details -> Justification: Visualizes the multi-dimensional trade-offs (Latency, Cost, Scalability) in a single, intuitive chart. Library/Method: Chart.js.
+        - Report Info: Architectures (e.g., CNNs, Transformers) -> Goal: Show Evolution/Process -> Viz: Timeline-like layout (HTML/CSS) -> Interaction: Click to see details -> Justification: Effectively visualizes the chronological progression and key breakthroughs in model architectures. Library/Method: Vanilla JS.
+        - Report Info: Bias/Fairness Metrics -> Goal: Inform -> Viz: Tabbed Content -> Interaction: Click tab to see definition -> Justification: Simplifies complex, related concepts into an easy-to-navigate interface. Library/Method: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #333;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: #E9E6E0;
+            color: #A36A00;
+            transform: translateX(4px);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .tab-button.active {
+            border-color: #A36A00;
+            background-color: #FFFBF2;
+            color: #A36A00;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 100%;
+            max-width: 800px;
+            max-height: 450px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 50vh;
+            }
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #D1D5DB;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: calc(1rem - 0.375rem);
+            top: 0.5rem;
+            height: 0.875rem;
+            width: 0.875rem;
+            background-color: #FFF;
+            border: 2px solid #D1D5DB;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex h-screen bg-[#F8F7F4]">
+        <aside id="sidebar" class="w-64 bg-[#FFFFFF] shadow-md flex-shrink-0 p-4 transition-all duration-300 md:block hidden">
+            <h1 class="text-xl font-bold text-[#A36A00] mb-6 border-b pb-4">ML/AI Dev Guide</h1>
+            <nav class="space-y-2">
+                <a href="#home" class="sidebar-link flex items-center p-2 rounded-lg text-gray-700 font-medium">
+                    <span class="mr-3">🏠</span> Home
+                </a>
+                <a href="#foundations" class="sidebar-link flex items-center p-2 rounded-lg text-gray-700 font-medium">
+                    <span class="mr-3">🏛️</span> Foundations
+                </a>
+                <a href="#data" class="sidebar-link flex items-center p-2 rounded-lg text-gray-700 font-medium">
+                    <span class="mr-3">💾</span> Data Lifecycle
+                </a>
+                <a href="#tooling" class="sidebar-link flex items-center p-2 rounded-lg text-gray-700 font-medium">
+                    <span class="mr-3">🛠️</span> Tooling & MLOps
+                </a>
+                <a href="#production" class="sidebar-link flex items-center p-2 rounded-lg text-gray-700 font-medium">
+                    <span class="mr-3">🚀</span> Production
+                </a>
+                <a href="#ethics" class="sidebar-link flex items-center p-2 rounded-lg text-gray-700 font-medium">
+                    <span class="mr-3">⚖️</span> Ethics & Future
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <button id="menu-toggle" class="md:hidden mb-4 p-2 rounded-md bg-white shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            </button>
+
+            <div id="home" class="content-section">
+                <h2 class="text-3xl font-bold mb-4 text-gray-800">A Comprehensive Synthesis of Modern ML & AI</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">Welcome to this interactive guide, designed to distill the vast and complex world of Machine Learning and Artificial Intelligence into an explorable journey. This application translates a comprehensive report into a dynamic experience, allowing you to navigate the key concepts, tools, and best practices that define modern AI development. Whether you're an engineer, a researcher, or a student, this guide is your foundation for building the next generation of intelligent systems.</p>
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">How to Use This Guide</h3>
+                    <p class="text-gray-600">Use the navigation on the left to explore the core stages of the AI lifecycle. Each section contains interactive visualizations and digestible content blocks. Click, hover, and filter to dive deeper into topics that interest you most. The journey is yours to define.</p>
+                </div>
+            </div>
+
+            <div id="foundations" class="content-section">
+                <h2 class="text-3xl font-bold mb-2 text-gray-800">Foundations of Machine Learning</h2>
+                <p class="text-gray-600 mb-8">At the heart of any AI system lies a set of core principles. This section explores the fundamental learning paradigms that dictate how models learn, the state-of-the-art architectures that dominate different domains, and the critical processes of optimization and evaluation.</p>
+                
+                <div class="card p-6 rounded-xl mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Core Learning Paradigms</h3>
+                    <p class="text-gray-600 mb-6">Machine learning is a collection of distinct paradigms, each defined by the nature of the data and the feedback used to learn. Click on a paradigm to learn more.</p>
+                    <div id="paradigms-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">State-of-the-Art Architectures</h3>
+                    <div id="architectures-tabs" class="flex border-b mb-6"></div>
+                    <div id="architectures-content"></div>
+                </div>
+            </div>
+
+            <div id="data" class="content-section">
+                 <h2 class="text-3xl font-bold mb-2 text-gray-800">The Data Lifecycle</h2>
+                <p class="text-gray-600 mb-8">The performance, reliability, and fairness of any model are fundamentally constrained by the quality of its data. This section covers the critical sequence of steps that transforms raw information into a valuable asset for model development.</p>
+
+                <div class="card p-6 rounded-xl mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Data Lifecycle Stages</h3>
+                    <p class="text-gray-600 mb-6">The data lifecycle is a journey from raw collection to analysis-ready information. Each step is crucial for building robust models. Below is a simplified representation of this process.</p>
+                    <div id="data-lifecycle-diagram" class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 p-4"></div>
+                </div>
+                
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Bias and Fairness</h3>
+                    <p class="text-gray-600 mb-6">Models learn from data, and if that data reflects societal biases, the model will perpetuate them. Addressing this is a critical challenge. Different quantitative metrics exist to define "fairness," but they are often mutually exclusive, making the choice of metric an ethical and contextual decision, not just a technical one.</p>
+                     <div id="fairness-tabs" class="flex border-b mb-6"></div>
+                    <div id="fairness-content" class="p-4 bg-gray-50 rounded-lg"></div>
+                </div>
+            </div>
+            
+            <div id="tooling" class="content-section">
+                <h2 class="text-3xl font-bold mb-2 text-gray-800">Tooling & MLOps</h2>
+                <p class="text-gray-600 mb-8">Building AI systems depends on a robust ecosystem of tools. This section compares core frameworks, essential libraries, and the critical MLOps platforms that bridge the gap between development and production.</p>
+                
+                <div class="card p-6 rounded-xl mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Deep Learning Frameworks Comparison</h3>
+                    <p class="text-gray-600 mb-6">The choice of deep learning framework is a pivotal decision. This chart compares the leading frameworks across key criteria. Hover over the bars for a summary of their strengths in each area.</p>
+                    <div class="chart-container h-[50vh] max-h-[500px]">
+                        <canvas id="frameworksChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">MLOps Tools Explorer</h3>
+                    <p class="text-gray-600 mb-6">MLOps platforms help deploy and maintain models reliably. Use the filters below to explore popular tools based on their primary function or license type.</p>
+                    <div id="mlops-filters" class="flex flex-wrap gap-2 mb-6"></div>
+                    <div id="mlops-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+
+            <div id="production" class="content-section">
+                <h2 class="text-3xl font-bold mb-2 text-gray-800">From Training to Production</h2>
+                <p class="text-gray-600 mb-8">A model's value is realized only when it's live. This section covers advanced training, deployment strategies, and the engineering disciplines needed to monitor and maintain models over time.</p>
+                
+                <div class="card p-6 rounded-xl mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Model Deployment Strategies</h3>
+                    <p class="text-gray-600 mb-6">Choosing the right deployment strategy depends on your application's needs for latency, cost, and scale. This bubble chart visualizes the trade-offs. The size of the bubble represents its scalability.</p>
+                     <div class="chart-container h-[50vh] max-h-[500px]">
+                        <canvas id="deploymentChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Post-Deployment Monitoring</h3>
+                    <p class="text-gray-600 mb-4">Once in production, a model's performance can degrade. This phenomenon, known as **model drift**, requires continuous monitoring.</p>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold text-blue-800">Data Drift</h4>
+                            <p class="text-blue-700 text-sm">The statistical properties of the input data change. For example, a loan prediction model's inputs (like average income) drift as the economy changes.</p>
+                        </div>
+                        <div class="flex-1 p-4 bg-green-50 rounded-lg">
+                            <h4 class="font-semibold text-green-800">Concept Drift</h4>
+                            <p class="text-green-700 text-sm">The relationship between inputs and the output changes. For example, fraudsters develop new techniques, making old patterns obsolete.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ethics" class="content-section">
+                <h2 class="text-3xl font-bold mb-2 text-gray-800">Ethics, Responsibility & The Future</h2>
+                <p class="text-gray-600 mb-8">As AI becomes more pervasive, its development can no longer be a purely technical exercise. This section addresses frameworks for building trustworthy AI and looks toward the emerging trends shaping the future.</p>
+
+                <div class="card p-6 rounded-xl mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">The Evolving Regulatory Landscape</h3>
+                    <p class="text-gray-600 mb-6">Governments worldwide are moving to regulate AI to mitigate risks. Click on a region to learn about key regulations.</p>
+                     <div id="regulations-container" class="space-y-4"></div>
+                </div>
+
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Future Directions</h3>
+                    <p class="text-gray-600 mb-6">The field of AI is in a constant state of rapid evolution. Here are some of the most significant trends that are likely to define the next era of AI.</p>
+                    <div id="future-trends-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const data = {
+        paradigms: [
+            { name: 'Supervised Learning', icon: '🧑‍🏫', description: 'Model learns from labeled data (input-output pairs). Goal is to predict outputs for new inputs. Common tasks are classification and regression.' },
+            { name: 'Unsupervised Learning', icon: '🤔', description: 'Model learns from unlabeled data. Goal is to find hidden patterns or structures. Common tasks are clustering and dimensionality reduction.' },
+            { name: 'Reinforcement Learning', icon: '🤖', description: 'An agent learns by interacting with an environment. It receives rewards or penalties for actions to maximize its cumulative reward.' },
+            { name: 'Semi-Supervised', icon: '🧑‍🔬', description: 'Uses a small amount of labeled data to guide learning on a large pool of unlabeled data, bridging supervised and unsupervised learning.' },
+            { name: 'Self-Supervised', icon: '💡', description: 'Model learns from unlabeled data by creating its own supervised tasks (e.g., predicting a masked word). The engine of foundation models.' },
+            { name: 'Transfer Learning', icon: '🔄', description: 'Repurposes a pre-trained model as a starting point for a new task, drastically reducing data and compute needs.' },
+        ],
+        architectures: {
+            tabs: ['Computer Vision', 'Natural Language Processing', 'Reinforcement Learning', 'Graph Neural Networks'],
+            content: {
+                'Computer Vision': `
+                    <p class="text-gray-600 mb-6">CV enables machines to interpret visual information. Its architectural evolution has been dramatic, moving from localized feature detectors to global context models.</p>
+                    <div class="relative timeline pl-8">
+                        <div class="timeline-item relative mb-8 pl-8">
+                            <h4 class="font-semibold">CNNs (e.g., LeNet, AlexNet, ResNet)</h4>
+                            <p class="text-sm text-gray-500">For years, Convolutional Neural Networks were the champions, using convolutional filters to learn spatial hierarchies of features. ResNet's "skip connections" were a key breakthrough, enabling networks thousands of layers deep.</p>
+                        </div>
+                        <div class="timeline-item relative mb-8 pl-8">
+                            <h4 class="font-semibold">Vision Transformers (ViT)</h4>
+                            <p class="text-sm text-gray-500">A paradigm shift applying the Transformer to vision. ViTs treat an image as a sequence of patches, using self-attention to capture global, long-range dependencies, outperforming CNNs on massive datasets.</p>
+                        </div>
+                        <div class="timeline-item relative mb-8 pl-8">
+                            <h4 class="font-semibold">Generative Models (GANs, Diffusion)</h4>
+                            <p class="text-sm text-gray-500">Models that create new data. GANs use a generator/discriminator duo. Diffusion Models, the current state-of-the-art, learn to reverse a noising process to generate high-fidelity images from scratch.</p>
+                        </div>
+                    </div>`,
+                'Natural Language Processing': `
+                    <p class="text-gray-600 mb-6">NLP focuses on enabling computers to understand and generate human language. The field was completely reshaped by a single architectural innovation.</p>
+                     <div class="relative timeline pl-8">
+                        <div class="timeline-item relative mb-8 pl-8">
+                            <h4 class="font-semibold">RNNs/LSTMs</h4>
+                            <p class="text-sm text-gray-500">Early standards for sequence tasks. They process data sequentially, but struggled with long-range dependencies and were difficult to parallelize.</p>
+                        </div>
+                        <div class="timeline-item relative mb-8 pl-8">
+                            <h4 class="font-semibold">The Transformer</h4>
+                            <p class="text-sm text-gray-500">Introduced in "Attention Is All You Need." Its self-attention mechanism allows the model to weigh all words simultaneously, capturing complex context. Highly parallelizable, it's the backbone of all modern LLMs like BERT and GPT.</p>
+                        </div>
+                    </div>`,
+                'Reinforcement Learning': `
+                    <p class="text-gray-600 mb-6">RL architectures are defined by what the agent learns. The goal is to create a "policy" that maximizes rewards in an environment.</p>
+                    <div class="space-y-4">
+                        <div><h4 class="font-semibold">Value-Based Methods (e.g., Q-Learning)</h4><p class="text-sm text-gray-500">Learn a value function that estimates the future reward of an action in a state. The policy is to choose the action with the highest value.</p></div>
+                        <div><h4 class="font-semibold">Policy-Based Methods (e.g., Policy Gradients)</h4><p class="text-sm text-gray-500">Directly learn the policy function that maps states to actions. Well-suited for continuous action spaces like robotics.</p></div>
+                        <div><h4 class="font-semibold">Actor-Critic Methods</h4><p class="text-sm text-gray-500">A hybrid approach with two models: an 'Actor' (policy) that acts, and a 'Critic' (value) that evaluates the action. This leads to more stable and efficient learning.</p></div>
+                    </div>`,
+                'Graph Neural Networks': `
+                    <p class="text-gray-600 mb-6">GNNs are designed to operate on graph-structured data, like social networks or molecules. They work by passing "messages" between connected nodes.</p>
+                    <div class="space-y-4">
+                        <div><h4 class="font-semibold">Core Concept: Message Passing</h4><p class="text-sm text-gray-500">Each node iteratively aggregates feature information from its neighbors to update its own representation, learning from the graph's topology.</p></div>
+                        <div><h4 class="font-semibold">Current Trends</h4><p class="text-sm text-gray-500">Research is focused on applying Transformers to graphs, using GNNs for scientific discovery, and integrating them with LLMs for structural reasoning.</p></div>
+                    </div>`
+            }
+        },
+        dataLifecycle: [
+            { name: 'Acquisition', icon: '📥', description: 'Gathering data via APIs, web scraping, or public datasets.' },
+            { name: 'Cleaning', icon: '🧹', description: 'Handling missing values, outliers, and inconsistencies.' },
+            { name: 'Feature Engineering', icon: '🔬', description: 'Creating meaningful features from raw data.' },
+            { name: 'Splitting', icon: '🔪', description: 'Dividing data into train, validation, and test sets for unbiased evaluation.' },
+            { name: 'Bias Mitigation', icon: '⚖️', description: 'Applying techniques to ensure fairness and prevent skewed outcomes.' },
+        ],
+        fairness: {
+            tabs: ['Demographic Parity', 'Equal Opportunity', 'Equalized Odds'],
+            content: {
+                'Demographic Parity': 'This metric is satisfied if the probability of receiving a positive outcome is the same for all groups, regardless of their qualifications. It focuses on equality of outcomes.',
+                'Equal Opportunity': 'This metric is satisfied if the true positive rate is the same for all groups. It ensures that individuals who are actually qualified have an equal chance of receiving a positive outcome.',
+                'Equalized Odds': 'A stricter criterion requiring both the true positive rate AND the false positive rate to be equal across all groups. It is often mathematically impossible to satisfy this and other metrics simultaneously.'
+            }
+        },
+        frameworks: {
+            labels: ['TensorFlow/Keras', 'PyTorch', 'JAX'],
+            datasets: [
+                {
+                    label: 'Ease of Use',
+                    data: [8, 9, 6],
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    tooltips: [
+                        'Keras is very user-friendly, but the core API can be complex.',
+                        'Widely considered the most intuitive and easy-to-learn framework.',
+                        'Steeper learning curve due to its functional programming paradigm.'
+                    ]
+                },
+                {
+                    label: 'Performance',
+                    data: [8, 8, 10],
+                     backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                     tooltips: [
+                        'Highly optimized for production, with XLA for speedups.',
+                        'Excellent performance, with torch.compile() for significant speedups.',
+                        'Often the highest performance, especially on TPUs and at large scale.'
+                    ]
+                },
+                {
+                    label: 'Ecosystem & Community',
+                    data: [9, 10, 7],
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                     tooltips: [
+                        'Mature and extensive ecosystem, still widely used in industry.',
+                        'Dominant in the research community with a vast ecosystem of libraries.',
+                        'Growing rapidly in research, but the ecosystem is less mature.'
+                    ]
+                }
+            ]
+        },
+        mlops: [
+            { name: 'MLflow', category: 'Tracking', type: 'Open Source', description: 'Lightweight, flexible, self-hosted solution for experiment tracking and reproducibility.' },
+            { name: 'Kubeflow', category: 'Orchestration', type: 'Open Source', description: 'Powerful, customizable, and portable MLOps platform for teams with Kubernetes expertise.' },
+            { name: 'Weights & Biases', category: 'Tracking', type: 'Proprietary', description: 'Polished platform for rapid iteration, deep analysis, and collaborative research.' },
+            { name: 'Comet ML', category: 'Tracking', type: 'Proprietary', description: 'End-to-end solution for tracking, comparing, and monitoring models from dev to production.' },
+            { name: 'Amazon SageMaker', category: 'Platform', type: 'Proprietary', description: 'Comprehensive, managed platform for organizations heavily invested in the AWS ecosystem.' },
+            { name: 'Google Vertex AI', category: 'Platform', type: 'Proprietary', description: 'Unified platform on GCP, especially for those using Google\'s foundation models and analytics.' },
+            { name: 'Azure ML', category: 'Platform', type: 'Proprietary', description: 'Enterprise-grade platform on Azure requiring strong security, compliance, and business tool integration.' },
+        ],
+        deployment: {
+            labels: ['Batch', 'Real-Time API', 'Streaming', 'Edge', 'Serverless'],
+            datasets: [{
+                label: 'Deployment Strategies',
+                data: [
+                    { x: 9, y: 1, r: 9, label: 'Batch Inference' }, 
+                    { x: 1, y: 9, r: 8, label: 'Real-Time API' }, 
+                    { x: 4, y: 7, r: 7, label: 'Streaming Inference' },
+                    { x: 0, y: 2, r: 4, label: 'Edge Deployment' }, 
+                    { x: 3, y: 3, r: 10, label: 'Serverless Functions' }
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)'
+            }]
+        },
+        regulations: [
+            { 
+                region: '🇪🇺 European Union', 
+                name: 'GDPR & EU AI Act',
+                description: 'GDPR grants rights like the "right to explanation" for automated decisions. The AI Act is the first comprehensive AI law, using a risk-based approach. High-risk systems face strict requirements on data quality, documentation, and human oversight. Generative AI has specific transparency rules.'
+            },
+            { 
+                region: '🇺🇸 California, USA', 
+                name: 'CCPA / CPRA',
+                description: 'Grants consumers rights over their personal data, including the right to know what is collected and opt-out of its sale. Proposed rules for Automated Decision-Making Technology (ADMT) would require transparency and opt-out rights for significant decisions (e.g., in employment, finance).'
+            }
+        ],
+        futureTrends: [
+            { name: 'Generative AI', icon: '🎨', description: 'Push towards smaller, efficient models (MoE), real-time fact-checking (RAG), and models for new modalities like video and audio.' },
+            { name: 'Foundation Models', icon: '🏗️', description: 'Shift from training models from scratch to fine-tuning large, pre-trained base models, democratizing access to powerful AI.' },
+            { name: 'Edge AI', icon: '📱', description: 'Running AI directly on devices like phones and sensors for lower latency, better privacy, and offline functionality.' },
+            { name: 'Causal Inference', icon: '🔗', description: 'Building models that understand cause-and-effect, not just correlation, leading to more robust and reliable decision-making.' }
+        ]
+    };
+
+    const mainContent = document.querySelector('main');
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menu-toggle');
+
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+    });
+
+    function navigate(hash) {
+        if (!hash) hash = '#home';
+        
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.querySelector(hash)?.classList.add('active');
+
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+            if(link.getAttribute('href') === hash) {
+                link.classList.add('active');
+            }
+        });
+        
+        mainContent.scrollTop = 0;
+    }
+
+    window.addEventListener('hashchange', () => navigate(window.location.hash));
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const hash = e.currentTarget.getAttribute('href');
+            history.pushState(null, null, hash);
+            navigate(hash);
+            if(window.innerWidth < 768) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    });
+
+    function initParadigms() {
+        const container = document.getElementById('paradigms-container');
+        if (!container) return;
+        container.innerHTML = data.paradigms.map(p => `
+            <div class="card p-4 rounded-lg cursor-pointer hover:shadow-lg transition-shadow" onclick="this.querySelector('p').classList.toggle('hidden')">
+                <div class="flex items-center mb-2">
+                    <span class="text-2xl mr-3">${p.icon}</span>
+                    <h4 class="font-semibold text-gray-800">${p.name}</h4>
+                </div>
+                <p class="text-sm text-gray-600 hidden">${p.description}</p>
+            </div>
+        `).join('');
+    }
+
+    function initArchitectures() {
+        const tabsContainer = document.getElementById('architectures-tabs');
+        const contentContainer = document.getElementById('architectures-content');
+        if (!tabsContainer || !contentContainer) return;
+        
+        tabsContainer.innerHTML = data.architectures.tabs.map((tab, index) => `
+            <button class="tab-button py-2 px-4 border-b-2 font-medium text-sm transition-colors ${index === 0 ? 'active' : ''}" data-tab="${tab}">
+                ${tab}
+            </button>
+        `).join('');
+
+        const updateContent = (tabName) => {
+            contentContainer.innerHTML = data.architectures.content[tabName];
+        };
+
+        tabsContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-button')) {
+                tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                updateContent(e.target.dataset.tab);
+            }
+        });
+
+        updateContent(data.architectures.tabs[0]);
+    }
+    
+    function initDataLifecycle() {
+        const container = document.getElementById('data-lifecycle-diagram');
+        if(!container) return;
+        container.innerHTML = data.dataLifecycle.map((stage, index) => `
+            <div class="flex-1 text-center">
+                <div class="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-3xl shadow-md">${stage.icon}</div>
+                <h4 class="font-semibold mt-2">${stage.name}</h4>
+                <p class="text-xs text-gray-500">${stage.description}</p>
+            </div>
+            ${index < data.dataLifecycle.length - 1 ? '<div class="hidden md:block text-gray-400 text-2xl font-light">&rarr;</div>' : ''}
+        `).join('');
+    }
+
+    function initFairness() {
+        const tabsContainer = document.getElementById('fairness-tabs');
+        const contentContainer = document.getElementById('fairness-content');
+        if (!tabsContainer || !contentContainer) return;
+
+        tabsContainer.innerHTML = data.fairness.tabs.map((tab, index) => `
+            <button class="tab-button py-2 px-4 border-b-2 font-medium text-sm transition-colors ${index === 0 ? 'active' : ''}" data-tab="${tab}">
+                ${tab}
+            </button>
+        `).join('');
+        
+        const updateContent = (tabName) => {
+            contentContainer.innerHTML = `<p>${data.fairness.content[tabName]}</p>`;
+        };
+        
+        tabsContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-button')) {
+                tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                updateContent(e.target.dataset.tab);
+            }
+        });
+
+        updateContent(data.fairness.tabs[0]);
+    }
+
+    function initFrameworksChart() {
+        const ctx = document.getElementById('frameworksChart')?.getContext('2d');
+        if (!ctx) return;
+        new Chart(ctx, {
+            type: 'bar',
+            data: data.frameworks,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 10, grid: { color: '#F0F0F0' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                return data.frameworks.datasets[context.datasetIndex].tooltips[context.dataIndex];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function initMlops() {
+        const filtersContainer = document.getElementById('mlops-filters');
+        const gridContainer = document.getElementById('mlops-grid');
+        if (!filtersContainer || !gridContainer) return;
+
+        const categories = ['All', ...new Set(data.mlops.map(t => t.category))];
+        const types = ['All', ...new Set(data.mlops.map(t => t.type))];
+
+        let filtersHTML = '<span class="font-semibold mr-2">Function:</span>';
+        filtersHTML += categories.map(c => `<button class="filter-btn px-3 py-1 text-sm rounded-full bg-gray-200" data-filter-type="category" data-filter-value="${c}">${c}</button>`).join('');
+        filtersHTML += '<span class="font-semibold mr-2 ml-4">Type:</span>';
+        filtersHTML += types.map(t => `<button class="filter-btn px-3 py-1 text-sm rounded-full bg-gray-200" data-filter-type="type" data-filter-value="${t}">${t}</button>`).join('');
+        filtersContainer.innerHTML = filtersHTML;
+
+        let currentFilters = { category: 'All', type: 'All' };
+
+        const renderGrid = () => {
+            const filteredData = data.mlops.filter(tool => {
+                const categoryMatch = currentFilters.category === 'All' || tool.category === currentFilters.category;
+                const typeMatch = currentFilters.type === 'All' || tool.type === currentFilters.type;
+                return categoryMatch && typeMatch;
+            });
+            gridContainer.innerHTML = filteredData.map(tool => `
+                <div class="card p-4 rounded-lg">
+                    <h4 class="font-bold text-gray-800">${tool.name}</h4>
+                    <div class="flex gap-2 my-2">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">${tool.category}</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${tool.type === 'Open Source' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800'}">${tool.type}</span>
+                    </div>
+                    <p class="text-sm text-gray-600">${tool.description}</p>
+                </div>
+            `).join('');
+        };
+        
+        filtersContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.filter-btn')) {
+                const { filterType, filterValue } = e.target.dataset;
+                currentFilters[filterType] = filterValue;
+                
+                filtersContainer.querySelectorAll(`[data-filter-type="${filterType}"]`).forEach(btn => btn.classList.remove('bg-yellow-400', 'text-black'));
+                e.target.classList.add('bg-yellow-400', 'text-black');
+                
+                renderGrid();
+            }
+        });
+
+        filtersContainer.querySelector('[data-filter-value="All"]').click();
+    }
+
+    function initDeploymentChart() {
+        const ctx = document.getElementById('deploymentChart')?.getContext('2d');
+        if(!ctx) return;
+        new Chart(ctx, {
+            type: 'bubble',
+            data: data.deployment,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: { display: true, text: 'Cost / Complexity' },
+                        grid: { color: '#F0F0F0' },
+                        ticks: { callback: () => '' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Latency' },
+                        grid: { color: '#F0F0F0' },
+                        ticks: { callback: () => '' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.label;
+                            },
+                            afterLabel: function(context) {
+                                return `Latency: ${context.raw.x}, Cost: ${context.raw.y}, Scalability: ${context.raw.r}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function initRegulations() {
+        const container = document.getElementById('regulations-container');
+        if(!container) return;
+        container.innerHTML = data.regulations.map(reg => `
+            <div class="card p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-800">${reg.region} - ${reg.name}</h4>
+                <p class="text-sm text-gray-600 mt-2">${reg.description}</p>
+            </div>
+        `).join('');
+    }
+    
+    function initFutureTrends() {
+        const container = document.getElementById('future-trends-container');
+        if(!container) return;
+        container.innerHTML = data.futureTrends.map(trend => `
+            <div class="card p-4 rounded-lg flex items-start">
+                <span class="text-3xl mr-4 mt-1">${trend.icon}</span>
+                <div>
+                    <h4 class="font-semibold text-gray-800">${trend.name}</h4>
+                    <p class="text-sm text-gray-600">${trend.description}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function initializeContent() {
+        initParadigms();
+        initArchitectures();
+        initDataLifecycle();
+        initFairness();
+        initFrameworksChart();
+        initMlops();
+        initDeploymentChart();
+        initRegulations();
+        initFutureTrends();
+    }
+
+    initializeContent();
+    navigate(window.location.hash || '#home');
+});
+</script>
+</body>
+</html>

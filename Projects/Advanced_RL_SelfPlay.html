@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Advanced RL & Self-Play</title>
+    <!-- Chosen Palette: Scholarly Warmth -->
+    <!-- Application Structure Plan: The SPA is designed with a top-down narrative flow, organized into thematic sections accessible via a sticky navigation bar for non-linear exploration. The structure is: 1. Hero: Grabs attention with the core summary. 2. Core Concepts: Builds foundational knowledge interactively. 3. Pioneering Algorithms: A deep, comparative dive into AlphaZero vs. MuZero using interactive diagrams. 4. Python Toolkit: A practical, data-driven comparison of key libraries using a dynamic chart, transforming the report's static table into an explorable tool. 5. Real-World Impact: Showcases the breadth of applications in an engaging, expandable grid format. 6. Implementation Guide: Consolidates challenges and best practices into an actionable, easy-to-digest format. This structure was chosen over a direct mirror of the report to create a user-centric journey, moving from "what it is" to "how it works," "what to use," "where it's used," and finally "how to build it," which is a more intuitive and engaging learning path. -->
+    <!-- Visualization & Content Choices: 1. Core Concepts: Goal: Inform. Method: Interactive cards (HTML/CSS/JS) to break down dense text. 2. Algorithms: Goal: Compare/Organize. Method: Interactive diagrams (HTML/CSS Flexbox) where clicking a component reveals its function, making complex architectures understandable. 3. Python Toolkit: Goal: Compare. Method: Interactive Bar Chart (Chart.js) to dynamically compare libraries on different metrics (usability, scalability), providing a richer experience than the static table. Interaction: Dropdown to select metric. 4. Applications: Goal: Organize/Inform. Method: Expandable cards (accordion style) to present case studies without overwhelming the user. 5. Implementation Guide: Goal: Organize. Method: Toggled content to link challenges directly to their best-practice solutions. These choices prioritize interaction and clarity, using Chart.js for quantitative comparison and custom JS/CSS for qualitative and structural information, all within the designed application flow. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            background-color: #FAF8F1;
+            color: #3C3633;
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #3A5A40;
+            border-bottom-color: #3A5A40;
+        }
+        .content-card, .algo-diagram-component, .app-card, .practice-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .app-card-content, .concept-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#FAF8F1]">
+
+    <!-- Header & Navigation -->
+    <header class="bg-[#FAF8F1]/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-200">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl font-bold text-[#3A5A40]">RL & Self-Play</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#concepts" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">Concepts</a>
+                    <a href="#algorithms" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">Algorithms</a>
+                    <a href="#toolkit" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">Toolkit</a>
+                    <a href="#impact" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">Impact</a>
+                    <a href="#guide" class="nav-link text-gray-600 border-b-2 border-transparent pb-1">Guide</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-white border border-gray-300 rounded-md p-2 text-sm">
+                        <option value="#home">Home</option>
+                        <option value="#concepts">Concepts</option>
+                        <option value="#algorithms">Algorithms</option>
+                        <option value="#toolkit">Toolkit</option>
+                        <option value="#impact">Impact</option>
+                        <option value="#guide">Guide</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="home" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <!-- Hero Section -->
+        <section class="text-center py-16">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-[#3A5A40]">Advanced Reinforcement Learning & Self-Play</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-700">An interactive exploration of the techniques, algorithms, and real-world applications revolutionizing AI, from game-playing titans to complex industrial systems.</p>
+        </section>
+
+        <!-- Core Concepts Section -->
+        <section id="concepts" class="py-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Foundational Concepts</h3>
+                <p class="mt-2 text-md text-gray-600 max-w-2xl mx-auto">This section introduces the core ideas behind Reinforcement Learning and Self-Play. Click on each concept to uncover key challenges and details, providing the necessary background to understand the more advanced topics.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md cursor-pointer concept-card">
+                    <h4 class="text-xl font-semibold mb-2 text-[#3A5A40]">What is Reinforcement Learning?</h4>
+                    <p class="text-gray-600">RL enables intelligent agents to learn optimal behaviors through trial-and-error interactions with an environment, maximizing a cumulative reward.</p>
+                    <div class="mt-4 text-sm text-gray-700 concept-details">
+                        <p class="font-semibold mt-3">Key Challenges:</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li><strong>Sparse & Delayed Rewards:</strong> Difficulty in assigning credit for actions with long-term consequences.</li>
+                            <li><strong>Exploration vs. Exploitation:</strong> Balancing discovery of new strategies with use of known good ones.</li>
+                            <li><strong>Sample Efficiency:</strong> Learning effectively from a limited number of interactions, which can be costly or unsafe.</li>
+                            <li><strong>Interpretability:</strong> The "black-box" nature of deep neural networks makes decisions hard to trust and debug.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md cursor-pointer concept-card">
+                    <h4 class="text-xl font-semibold mb-2 text-[#3A5A40]">The Power of Self-Play</h4>
+                    <p class="text-gray-600">A paradigm where agents learn by playing against themselves, generating their own data and creating a dynamic curriculum for continuous improvement.</p>
+                    <div class="mt-4 text-sm text-gray-700 concept-details">
+                        <p class="font-semibold mt-3">Key Benefits:</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li><strong>Overcomes Data Scarcity:</strong> Generates vast amounts of training data without human labeling.</li>
+                            <li><strong>Superhuman Performance:</strong> Discovers novel strategies beyond human intuition.</li>
+                            <li><strong>Robustness:</strong> Develops policies that are resilient to a wide range of opponent strategies.</li>
+                            <li><strong>Solves Non-Stationarity:</strong> Inherently adapts to an ever-evolving opponent (itself).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pioneering Algorithms Section -->
+        <section id="algorithms" class="py-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Pioneering Algorithms: AlphaZero vs. MuZero</h3>
+                <p class="mt-2 text-md text-gray-600 max-w-2xl mx-auto">This section provides a comparative look at two landmark algorithms from DeepMind. Interact with the diagrams to understand how these systems plan and learn, pushing the boundaries of AI.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                <!-- AlphaZero Card -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-2xl font-bold mb-4 text-[#3A5A40]">AlphaZero: Mastery Through Rules</h4>
+                    <p class="mb-4 text-gray-600">Learns entirely via self-play, given only the rules of the game. It combines a neural network with Monte Carlo Tree Search (MCTS) to achieve superhuman performance.</p>
+                    <div class="border-t pt-4">
+                        <h5 class="font-semibold mb-2">Architectural Flow:</h5>
+                        <div class="space-y-2 algo-diagram" data-algo="alphazero">
+                            <div class="algo-diagram-component bg-amber-100 p-3 rounded-md border border-amber-300" data-info="AlphaZero receives the current board state (e.g., chess position) as input.">Board State →</div>
+                            <div class="algo-diagram-component bg-sky-100 p-3 rounded-md border border-sky-300" data-info="A single deep neural network processes the state. It has a shared 'body' and two 'heads'.">Neural Network (Policy + Value) →</div>
+                            <div class="flex space-x-2">
+                                <div class="w-1/2 algo-diagram-component bg-teal-100 p-3 rounded-md border border-teal-300" data-info="The Policy Head outputs probabilities for all possible moves. This guides the MCTS to explore promising actions.">Policy Vector (π)</div>
+                                <div class="w-1/2 algo-diagram-component bg-rose-100 p-3 rounded-md border border-rose-300" data-info="The Value Head outputs a single scalar, estimating the probability of winning from the current state.">Value (v)</div>
+                            </div>
+                             <div class="algo-diagram-component bg-gray-200 p-3 rounded-md border border-gray-400" data-info="The network's outputs guide the MCTS search. MCTS explores future possibilities and returns an improved policy, which is used to select the next move and to train the network.">Monte Carlo Tree Search (MCTS)</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- MuZero Card -->
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-2xl font-bold mb-4 text-[#3A5A40]">MuZero: Learning Without Rules</h4>
+                    <p class="mb-4 text-gray-600">A significant leap forward, MuZero learns a model of the environment's dynamics, allowing it to plan successfully in domains even without being told the rules.</p>
+                    <div class="border-t pt-4">
+                        <h5 class="font-semibold mb-2">Architectural Flow:</h5>
+                        <div class="space-y-2 algo-diagram" data-algo="muzero">
+                            <div class="algo-diagram-component bg-amber-100 p-3 rounded-md border border-amber-300" data-info="MuZero starts with a raw observation (e.g., a screen from an Atari game).">Observation →</div>
+                            <div class="algo-diagram-component bg-purple-100 p-3 rounded-md border border-purple-300" data-info="The Representation Function (h) converts the raw observation into a hidden state representation, capturing relevant information.">h: Representation → Hidden State (s)</div>
+                            <div class="algo-diagram-component bg-sky-100 p-3 rounded-md border border-sky-300" data-info="The Dynamics Function (g) is MuZero's learned model. Given a state and an action, it imagines the next hidden state and predicts the immediate reward, without a real simulator.">g: Dynamics (s, a) → Next State (s'), Reward (r)</div>
+                            <div class="algo-diagram-component bg-teal-100 p-3 rounded-md border border-teal-300" data-info="The Prediction Function (f) takes a hidden state and, similar to AlphaZero, predicts the policy and value from that internal state.">f: Prediction (s) → Policy (π), Value (v)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="algo-info-box" class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-center opacity-0 transition-opacity duration-300">
+                Click on a component in the diagrams above to learn more.
+            </div>
+        </section>
+
+        <!-- Python Toolkit Section -->
+        <section id="toolkit" class="py-16 scroll-mt-16 bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">The Python RL Toolkit</h3>
+                <p class="mt-2 text-md text-gray-600 max-w-2xl mx-auto">The Python ecosystem is central to modern RL development. This section provides an interactive comparison of the leading libraries. Select a metric to see how they stack up, helping you choose the right tool for your project.</p>
+                <div class="mt-6">
+                    <label for="metric-selector" class="mr-2 font-semibold">Compare by:</label>
+                    <select id="metric-selector" class="p-2 border rounded-md">
+                        <option value="scalability" selected>Scalability</option>
+                        <option value="easeOfUse">Ease of Use</option>
+                        <option value="multiAgentSupport">Multi-Agent Support</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="library-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- Real-World Impact Section -->
+        <section id="impact" class="py-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Real-World Impact</h3>
+                <p class="mt-2 text-md text-gray-600 max-w-2xl mx-auto">Advanced RL is not just for games. It's driving innovation across numerous industries. Click on each domain to explore specific applications and see how RL is solving complex, real-world problems.</p>
+            </div>
+            <div id="app-grid" class="space-y-4">
+                <!-- App cards will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Implementation Guide Section -->
+        <section id="guide" class="py-16 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Implementation Guide</h3>
+                <p class="mt-2 text-md text-gray-600 max-w-2xl mx-auto">Building robust RL systems is challenging. This guide distills the key challenges and pairs them with proven best practices to help you navigate the complexities of implementation.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-2xl font-semibold mb-4 text-center">Common Challenges</h4>
+                    <div class="space-y-4">
+                        <div class="practice-card bg-rose-50 p-4 rounded-lg border border-rose-200"><strong>Reward Function Design:</strong> Poorly designed rewards lead to unintended and suboptimal agent behavior.</div>
+                        <div class="practice-card bg-rose-50 p-4 rounded-lg border border-rose-200"><strong>Efficiency:</strong> RL is computationally expensive and requires massive amounts of data/simulations.</div>
+                        <div class="practice-card bg-rose-50 p-4 rounded-lg border border-rose-200"><strong>Stability & Convergence:</strong> Training can be unstable, leading to diverging policies or getting stuck in local optima.</div>
+                        <div class="practice-card bg-rose-50 p-4 rounded-lg border border-rose-200"><strong>Debugging & Interpretability:</strong> Understanding *why* an agent made a decision is difficult, hindering trust and deployment.</div>
+                    </div>
+                </div>
+                 <div>
+                    <h4 class="text-2xl font-semibold mb-4 text-center">Best Practices</h4>
+                    <div class="space-y-4">
+                        <div class="practice-card bg-teal-50 p-4 rounded-lg border border-teal-200 hover:shadow-lg"><strong>Modular Architecture:</strong> Separate game logic, models, and training loops for clarity and reusability.</div>
+                        <div class="practice-card bg-teal-50 p-4 rounded-lg border border-teal-200 hover:shadow-lg"><strong>Leverage Frameworks:</strong> Use established libraries like Ray RLlib or Stable Baselines3 to avoid reinventing the wheel.</div>
+                        <div class="practice-card bg-teal-50 p-4 rounded-lg border border-teal-200 hover:shadow-lg"><strong>Robust Buffers & Exploration:</strong> Use prioritized replay buffers and advanced exploration strategies (not just epsilon-greedy).</div>
+                        <div class="practice-card bg-teal-50 p-4 rounded-lg border border-teal-200 hover:shadow-lg"><strong>Log Everything:</strong> Use tools like TensorBoard to comprehensively log metrics and visualize training progress.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t mt-16">
+        <div class="container mx-auto py-6 text-center text-gray-500">
+            <p>Interactive summary generated from the report on Advanced RL & Self-Play.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Data from Report ---
+            const libraryData = {
+                labels: ['Ray RLlib', 'Stable Baselines3', 'TF-Agents', 'TorchRL'],
+                scalability: {
+                    scores: [5, 3, 4, 4],
+                    description: 'Ability to handle large-scale, distributed workloads.'
+                },
+                easeOfUse: {
+                    scores: [2, 5, 3, 3],
+                    description: 'Lower score means a steeper learning curve.'
+                },
+                multiAgentSupport: {
+                    scores: [5, 2, 4, 4],
+                    description: 'Native and advanced support for multi-agent scenarios.'
+                }
+            };
+
+            const applications = [
+                {
+                    domain: 'Game AI 🎮',
+                    summary: 'The most famous application, where self-play agents like AlphaZero and MuZero achieved superhuman performance in complex games like Go, Chess, and StarCraft II.',
+                    details: 'By playing millions of games against themselves, agents discover novel, creative, and highly effective strategies that were previously unknown to human experts. This serves as a powerful benchmark for AI progress.'
+                },
+                {
+                    domain: 'Robotics & Autonomous Systems 🤖',
+                    summary: 'RL teaches robots complex manipulation tasks, navigation, and locomotion. Self-play can help train autonomous vehicles in large-scale simulations.',
+                    details: 'Applications range from enhancing the agility of Boston Dynamics robots to improving the precision of surgical assistants and optimizing warehouse automation. In autonomous driving, RL helps vehicles adapt to dynamic traffic conditions.'
+                },
+                {
+                    domain: 'Finance & Algorithmic Trading 💹',
+                    summary: 'Agents learn optimal trading strategies (buy, sell, hold) to maximize profit or limit risk in volatile market environments.',
+                    details: 'RL is advantageous here because it can learn effective policies without needing an explicit model of the market\'s complex dynamics. Deep Q-Learning (DQL) is a common approach.'
+                },
+                {
+                    domain: 'Healthcare & Drug Discovery 💊',
+                    summary: 'RL is used to optimize dynamic treatment regimes, personalize drug dosages, and assist in drug discovery by exploring vast chemical spaces.',
+                    details: 'By processing continuous streams of patient data, RL agents can recommend personalized care policies. While data scarcity is a challenge, the potential to improve patient outcomes is immense.'
+                },
+                {
+                    domain: 'Supply Chain Optimization 🚚',
+                    summary: 'RL models optimize inventory management, warehouse allocation, and vehicle routing to maximize efficiency and minimize costs.',
+                    details: 'Supply chain management is inherently a sequential decision-making problem. RL algorithms like PPO and DQN can learn policies to anticipate market demand and adapt to disruptions in real-time.'
+                }
+            ];
+
+            // --- Navigation ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+            const mobileNav = document.getElementById('mobile-nav');
+
+            function updateActiveLink() {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 68) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            window.addEventListener('scroll', updateActiveLink);
+            
+            mobileNav.addEventListener('change', (e) => {
+                const targetId = e.target.value;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+
+
+            // --- Concept Cards Interaction ---
+            document.querySelectorAll('.concept-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const details = card.querySelector('.concept-details');
+                    if (details.style.maxHeight) {
+                        details.style.maxHeight = null;
+                    } else {
+                        details.style.maxHeight = details.scrollHeight + "px";
+                    }
+                });
+            });
+
+            // --- Algorithm Diagram Interaction ---
+            const algoInfoBox = document.getElementById('algo-info-box');
+            document.querySelectorAll('.algo-diagram-component').forEach(component => {
+                component.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const info = component.dataset.info;
+                    algoInfoBox.textContent = info;
+                    algoInfoBox.style.opacity = '1';
+
+                    document.querySelectorAll('.algo-diagram-component').forEach(c => c.classList.remove('ring-2', 'ring-offset-2', 'ring-yellow-400'));
+                    component.classList.add('ring-2', 'ring-offset-2', 'ring-yellow-400');
+                });
+            });
+            document.body.addEventListener('click', () => {
+                 algoInfoBox.style.opacity = '0';
+                 document.querySelectorAll('.algo-diagram-component').forEach(c => c.classList.remove('ring-2', 'ring-offset-2', 'ring-yellow-400'));
+            });
+
+            // --- Python Toolkit Chart ---
+            const ctx = document.getElementById('library-chart').getContext('2d');
+            let libraryChart;
+
+            function renderChart(metric) {
+                if (libraryChart) {
+                    libraryChart.destroy();
+                }
+                libraryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: libraryData.labels,
+                        datasets: [{
+                            label: libraryData[metric].description,
+                            data: libraryData[metric].scores,
+                            backgroundColor: ['#D97706', '#4682B4', '#3A5A40', '#9CA3AF'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 5,
+                                grid: {
+                                    color: '#E5E7EB'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += `${context.raw}/5`;
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const metricSelector = document.getElementById('metric-selector');
+            metricSelector.addEventListener('change', (e) => {
+                renderChart(e.target.value);
+            });
+            renderChart('scalability');
+
+            // --- Applications Grid ---
+            const appGrid = document.getElementById('app-grid');
+            applications.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card bg-white rounded-lg shadow-md overflow-hidden';
+                card.innerHTML = `
+                    <div class="p-6 cursor-pointer flex justify-between items-center app-card-header">
+                        <h4 class="text-xl font-semibold text-[#3A5A40]">${app.domain}</h4>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="px-6 pb-6 app-card-content">
+                        <p class="text-gray-600 mb-2">${app.summary}</p>
+                        <p class="text-sm text-gray-500">${app.details}</p>
+                    </div>
+                `;
+                appGrid.appendChild(card);
+            });
+            
+            appGrid.addEventListener('click', (e) => {
+                const header = e.target.closest('.app-card-header');
+                if (header) {
+                    const content = header.nextElementSibling;
+                    const arrow = header.querySelector('span');
+                    const isOpen = content.style.maxHeight;
+
+                    // Close all others
+                    document.querySelectorAll('.app-card-content').forEach(c => c.style.maxHeight = null);
+                    document.querySelectorAll('.app-card-header span').forEach(a => a.style.transform = 'rotate(0deg)');
+                    
+                    if (!isOpen) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        arrow.style.transform = 'rotate(180deg)';
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>

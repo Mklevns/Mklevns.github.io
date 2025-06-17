@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to ML with Python</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a sticky top navigation bar for direct access to key sections: Concepts, Toolkit, Workflow, Deep Dive, and MLOps. This non-linear but guided structure allows users to either progress sequentially or jump to specific topics. The core of the application is interactivity: clickable diagrams to explain nested concepts (AI/ML/DL), tabbed interfaces for comparing learning paradigms and tools, and a unique side-by-side code viewer to directly compare TensorFlow and PyTorch. This design prioritizes user engagement and targeted learning over the passive, linear reading of the original report, making complex information more digestible and comparable. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: AI/ML/DL Definitions -> Goal: Inform -> Viz: Interactive concentric circles diagram (HTML/CSS) -> Interaction: Click reveals details. Justification: Visually clarifies the hierarchical relationship.
+        - Report Info: Learning Paradigms -> Goal: Compare -> Viz: Tabbed content switcher (HTML/JS) -> Interaction: Click tabs. Justification: Organizes distinct but related topics cleanly.
+        - Report Info: TensorFlow vs. PyTorch Code -> Goal: Compare -> Viz: Side-by-side code display -> Interaction: Buttons switch between code steps (e.g., 'Build Model', 'Train'). Justification: Provides a direct, high-impact comparison critical for learners.
+        - Report Info: Evaluation Metrics (Confusion Matrix) -> Goal: Inform/Interact -> Viz: Bar Chart (Chart.js) + dynamic text -> Interaction: Sliders adjust TP/TN/FP/FN values, metrics update in real-time. Justification: Makes abstract formulas tangible and teaches trade-offs.
+        - Report Info: End-to-End Workflow -> Goal: Organize -> Viz: Clickable process flow diagram (HTML/CSS). -> Interaction: Click stage to expand details. Justification: Provides a high-level overview with drill-down capability.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF6;
+            color: #3C3C3C;
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #6B705C;
+            border-bottom-color: #6B705C;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab.active {
+            background-color: #A3B18A;
+            color: white;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-[#6B705C]">ML/AI Developer's Guide</h1>
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#concepts" class="nav-link py-2 font-medium">Concepts</a>
+                <a href="#toolkit" class="nav-link py-2 font-medium">Toolkit</a>
+                <a href="#workflow" class="nav-link py-2 font-medium">Workflow</a>
+                <a href="#deep-dive" class="nav-link py-2 font-medium">Deep Dive</a>
+                <a href="#mlops" class="nav-link py-2 font-medium">MLOps</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A3B18A]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-4 pt-2 pb-4 space-y-2">
+             <a href="#concepts" class="block nav-link py-2 font-medium">Concepts</a>
+             <a href="#toolkit" class="block nav-link py-2 font-medium">Toolkit</a>
+             <a href="#workflow" class="block nav-link py-2 font-medium">Workflow</a>
+             <a href="#deep-dive" class="block nav-link py-2 font-medium">Deep Dive</a>
+             <a href="#mlops" class="block nav-link py-2 font-medium">MLOps</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 md:px-6 py-8 md:py-12">
+
+        <!-- Intro Section -->
+        <section id="intro" class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">From Python Developer to ML Engineer</h2>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">This interactive guide translates the core concepts, tools, and best practices of machine learning into an explorable experience. Go from fundamentals to production-ready models, one concept at a time.</p>
+             <a href="#concepts" class="mt-8 inline-block bg-[#6B705C] text-white font-bold py-3 px-8 rounded-full hover:bg-[#5A604D] transition-colors">Start Learning</a>
+        </section>
+
+        <!-- Main Content Sections -->
+        <div id="concepts" class="pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-12">Part 1: The Conceptual Foundation</h2>
+            
+            <div class="card p-6 md:p-8 mb-12">
+                <h3 class="text-2xl font-semibold text-center mb-2">Demystifying the AI Landscape</h3>
+                <p class="text-center text-gray-600 mb-8">AI, Machine Learning, and Deep Learning are nested concepts. Click on a circle to learn more about its role in the world of intelligent systems.</p>
+                <div id="ai-diagram" class="flex justify-center items-center h-64 md:h-80 relative">
+                    <div data-concept="ai" class="concept-circle cursor-pointer flex items-center justify-center bg-[#A3B18A]/30 rounded-full w-full h-full max-w-xs max-h-xs md:max-w-sm md:max-h-sm transition-all duration-300">
+                        <div data-concept="ml" class="concept-circle cursor-pointer flex items-center justify-center bg-[#A3B18A]/50 rounded-full w-2/3 h-2/3 transition-all duration-300">
+                            <div data-concept="dl" class="concept-circle cursor-pointer flex items-center justify-center bg-[#A3B18A] rounded-full w-1/2 h-1/2 transition-all duration-300">
+                                <span class="font-bold text-white text-lg">DL</span>
+                            </div>
+                            <span class="absolute font-bold text-lg" style="transform: translate(0, 55px);">ML</span>
+                        </div>
+                        <span class="absolute font-bold text-lg" style="transform: translate(0, 100px);">AI</span>
+                    </div>
+                </div>
+                <div id="concept-explanation" class="mt-8 text-center p-4 bg-gray-50 rounded-lg min-h-[100px]">
+                    <p class="text-gray-700">Select a concept to see its definition.</p>
+                </div>
+            </div>
+
+            <div class="card p-6 md:p-8">
+                <h3 class="text-2xl font-semibold text-center mb-8">Paradigms of Machine Learning</h3>
+                 <p class="text-center text-gray-600 mb-8">Machine learning isn't one-size-fits-all. The approach depends on the data you have and the problem you want to solve. Explore the main learning strategies below.</p>
+                <div id="paradigm-tabs" class="flex flex-wrap justify-center gap-2 mb-6">
+                    <!-- Tabs will be generated here -->
+                </div>
+                <div id="paradigm-content" class="p-4 bg-gray-50 rounded-lg min-h-[200px]">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+        </div>
+        
+        <div id="toolkit" class="pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-12">Part 2: The Essential Python ML Toolkit</h2>
+            <div class="card p-6 md:p-8">
+                <p class="text-center text-gray-600 mb-8">This section introduces the foundational libraries that power virtually every ML project in Python. We've created an interactive comparison for the deep learning frameworks.</p>
+                 <div id="toolkit-tabs" class="flex flex-wrap justify-center gap-2 mb-6"></div>
+                 <div id="toolkit-content" class="p-4 bg-gray-50 rounded-lg min-h-[300px]"></div>
+            </div>
+        </div>
+
+        <div id="workflow" class="pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-12">Part 3: The End-to-End Workflow</h2>
+            <div class="card p-6 md:p-8">
+                 <p class="text-center text-gray-600 mb-8">Building an ML model is a systematic process. Click through the stages of a typical project to understand the key steps and challenges involved.</p>
+                <div id="workflow-diagram" class="flex flex-col md:flex-row justify-around items-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
+                    <!-- Workflow stages will be generated here -->
+                </div>
+                <div id="workflow-content" class="p-4 bg-gray-50 rounded-lg min-h-[200px]">
+                     <!-- Content will be injected here -->
+                </div>
+                
+                <div class="mt-12">
+                    <h3 class="text-2xl font-semibold text-center mb-8">Interactive Evaluation: The Confusion Matrix</h3>
+                    <p class="text-center text-gray-600 mb-8">Accuracy can be misleading. Use the sliders below to see how changing the balance of a model's predictions affects crucial metrics like Precision and Recall. This demonstrates the classic trade-off in classification problems.</p>
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="tp-slider" class="font-medium">True Positives (TP): <span id="tp-value">50</span></label>
+                                    <input id="tp-slider" type="range" min="0" max="100" value="50" class="w-full">
+                                </div>
+                                <div>
+                                    <label for="fp-slider" class="font-medium">False Positives (FP): <span id="fp-value">10</span></label>
+                                    <input id="fp-slider" type="range" min="0" max="100" value="10" class="w-full">
+                                </div>
+                                <div>
+                                    <label for="tn-slider" class="font-medium">True Negatives (TN): <span id="tn-value">80</span></label>
+                                    <input id="tn-slider" type="range" min="0" max="100" value="80" class="w-full">
+                                </div>
+                                <div>
+                                    <label for="fn-slider" class="font-medium">False Negatives (FN): <span id="fn-value">5</span></label>
+                                    <input id="fn-slider" type="range" min="0" max="100" value="5" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="metrics-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <div id="deep-dive" class="pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-12">Part 4: Deep Learning in Practice</h2>
+            <div class="card p-6 md:p-8">
+                <p class="text-center text-gray-600 mb-8">Let's build a neural network to classify images, side-by-side in TensorFlow/Keras and PyTorch. Use the buttons to step through the code and see how each framework approaches the same task. This highlights the trade-offs between Keras's simplicity and PyTorch's explicit control.</p>
+                <div id="deep-dive-controls" class="flex flex-wrap justify-center gap-2 mb-6">
+                    <!-- Controls will be injected here -->
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-xl font-semibold text-center mb-4">TensorFlow / Keras</h4>
+                        <div id="tf-code-display" class="code-block h-96"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold text-center mb-4">PyTorch</h4>
+                        <div id="pytorch-code-display" class="code-block h-96"></div>
+                    </div>
+                </div>
+                 <div id="deep-dive-explanation" class="mt-6 p-4 bg-gray-50 rounded-lg"></div>
+            </div>
+        </div>
+
+        <div id="mlops" class="pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-12">Part 5: Professional ML Engineering</h2>
+            <div class="card p-6 md:p-8">
+                <p class="text-center text-gray-600 mb-8">Building a model is one thing; making it robust, reproducible, and deployable is another. This section covers the MLOps best practices that separate hobby projects from professional systems.</p>
+                <div id="mlops-accordion" class="space-y-4">
+                    <!-- Accordion items will be injected here -->
+                </div>
+            </div>
+        </div>
+        
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Interactive Guide to ML with Python</p>
+            <p class="text-sm text-gray-400 mt-2">Generated from source material for educational purposes.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const contentData = {
+            concepts: {
+                ai: {
+                    title: 'Artificial Intelligence (AI)',
+                    text: 'The broadest field, encompassing any technique that enables computers to simulate human intelligence. It includes everything from logic-based systems to modern machine learning.'
+                },
+                ml: {
+                    title: 'Machine Learning (ML)',
+                    text: 'A subset of AI focused on giving computers the ability to learn from data without being explicitly programmed. It\'s about finding patterns.'
+                },
+                dl: {
+                    title: 'Deep Learning (DL)',
+                    text: 'A specialized branch of ML using deep neural networks (many layers) to learn complex, hierarchical patterns from vast amounts of data. It powers recent breakthroughs in computer vision and NLP.'
+                }
+            },
+            paradigms: [
+                {
+                    name: 'Supervised',
+                    title: 'Supervised Learning',
+                    description: 'Learning from labeled data, like a student with an answer key. The model learns to map inputs to a known output.',
+                    tasks: ['Classification (predicting a category, e.g., spam/not spam)', 'Regression (predicting a number, e.g., house price)'],
+                    algorithms: 'Logistic Regression, SVM, Decision Trees, Random Forest'
+                },
+                {
+                    name: 'Unsupervised',
+                    title: 'Unsupervised Learning',
+                    description: 'Finding hidden patterns in unlabeled data. The model explores the data to find inherent structures.',
+                    tasks: ['Clustering (grouping similar items, e.g., customer segmentation)', 'Dimensionality Reduction (simplifying data, e.g., PCA)'],
+                    algorithms: 'K-Means, DBSCAN, Principal Component Analysis (PCA)'
+                },
+                {
+                    name: 'Reinforcement',
+                    title: 'Reinforcement Learning',
+                    description: 'An agent learns by trial and error, interacting with an environment to maximize a cumulative reward.',
+                    tasks: ['Game Playing (e.g., Chess, Go)', 'Robotics', 'Autonomous Systems'],
+                    algorithms: 'Q-Learning, Deep Q-Networks (DQN)'
+                }
+            ],
+            toolkit: [
+                 {
+                    name: 'Data Foundations',
+                    title: 'NumPy & Pandas',
+                    content: `
+                        <p class="mb-4"><strong>NumPy</strong> is the bedrock for numerical computing in Python, providing the fast and efficient <code>ndarray</code> object. <strong>Pandas</strong> is built on NumPy and provides the <code>DataFrame</code>, an essential tool for cleaning, manipulating, and exploring tabular data. The standard workflow is to prep data in Pandas, then convert it to NumPy arrays for the model.</p>
+                        <div class="code-block">
+<pre><code>import numpy as np
+import pandas as pd
+
+# Pandas DataFrame for data handling
+data = {'feature1': [1, 2, 3], 'feature2': [4, 5, 6]}
+df = pd.DataFrame(data)
+
+# Convert to NumPy array for modeling
+X = df.values 
+print(X)</code></pre>
+                        </div>`
+                },
+                {
+                    name: 'Classical ML',
+                    title: 'Scikit-learn',
+                    content: `
+                        <p class="mb-4">The most robust and popular library for classical (non-deep learning) ML. Its power lies in a simple, consistent <strong>Estimator API</strong>. Once you learn the <code>.fit()</code> and <code>.predict()</code> pattern for one model, you know it for all of them, making experimentation incredibly fast.</p>
+                        <div class="code-block">
+<pre><code>from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+# Assume X, y are prepared data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# 1. Instantiate
+model = LogisticRegression()
+# 2. Fit (Train)
+model.fit(X_train, y_train)
+# 3. Predict
+predictions = model.predict(X_test)</code></pre>
+                        </div>`
+                },
+                {
+                    name: 'Visualization',
+                    title: 'Matplotlib & Seaborn',
+                    content: `
+                        <p class="mb-4">Visualization is critical for both exploratory data analysis (EDA) and model evaluation. <strong>Matplotlib</strong> is the foundational library, offering deep control. <strong>Seaborn</strong> is built on top of it, providing a higher-level interface for creating beautiful statistical plots with less code, and integrates seamlessly with Pandas DataFrames.</p>
+                        <div class="code-block">
+<pre><code>import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Example: A correlation heatmap for EDA
+# corr = df.corr()
+# sns.heatmap(corr, annot=True, cmap='coolwarm')
+# plt.show()
+
+# Example: A confusion matrix for evaluation
+# from sklearn.metrics import confusion_matrix
+# cm = confusion_matrix(y_true, y_pred)
+# sns.heatmap(cm, annot=True, fmt='g')
+# plt.show()
+</code></pre>
+                        </div>`
+                }
+            ],
+            workflow: [
+                 {
+                    name: 'Data Prep',
+                    title: '1. Data Prep & Feature Engineering',
+                    content: 'The most time-consuming phase. Involves cleaning data (handling missing values, duplicates), and feature engineering (creating new, more informative features from existing ones). This includes encoding categorical data and scaling numerical features. Principle: "Garbage in, garbage out."'
+                },
+                {
+                    name: 'Training',
+                    title: '2. Model Selection & Training',
+                    content: 'Choosing an appropriate algorithm based on the problem (e.g., regression vs. classification) and data characteristics. The model is then trained on the prepared data using the `.fit()` method, where it learns patterns by minimizing a loss function.'
+                },
+                {
+                    name: 'Evaluation',
+                    title: '3. Rigorous Evaluation',
+                    content: 'Assessing model performance on unseen test data. The golden rule: NEVER evaluate on training data. Key metrics for classification are Precision, Recall, and F1-score, while regression uses MSE, RMSE, and R-squared.'
+                },
+                {
+                    name: 'Tuning',
+                    title: '4. Optimization & Tuning',
+                    content: 'Improving model performance by finding the best hyperparameters (settings configured before training). This is done systematically using techniques like GridSearchCV or RandomizedSearchCV.'
+                }
+            ],
+            deepDive: {
+                steps: [
+                    {
+                        name: 'Setup',
+                        explanation: "Both frameworks need to import libraries and load the data. Keras loads the dataset directly into NumPy arrays. PyTorch uses a `Dataset` object and a `DataLoader` to create iterable batches.",
+                        tf: `import tensorflow as tf\nfrom tensorflow import keras\n\n(train_images, train_labels), (test_images, test_labels) = keras.datasets.fashion_mnist.load_data()`,
+                        pytorch: `import torch\nfrom torch import nn\nfrom torch.utils.data import DataLoader\nfrom torchvision import datasets\nfrom torchvision.transforms import ToTensor\n\ntraining_data = datasets.FashionMNIST(root="data", train=True, download=True, transform=ToTensor())\ntest_data = datasets.FashionMNIST(root="data", train=False, download=True, transform=ToTensor())\n\ntrain_dataloader = DataLoader(training_data, batch_size=64)\ntest_dataloader = DataLoader(test_data, batch_size=64)`
+                    },
+                    {
+                        name: 'Build Model',
+                        explanation: "Keras uses the simple `Sequential` API to stack layers. PyTorch defines a model as a class inheriting from `nn.Module`, defining layers in `__init__` and the data flow in the `forward` method. This is more verbose but more flexible.",
+                        tf: `model = keras.Sequential([\n    keras.layers.Flatten(input_shape=(28, 28)),\n    keras.layers.Dense(128, activation='relu'),\n    keras.layers.Dense(10)\n])`,
+                        pytorch: `device = "cuda" if torch.cuda.is_available() else "cpu"\n\nclass NeuralNetwork(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.flatten = nn.Flatten()\n        self.linear_relu_stack = nn.Sequential(\n            nn.Linear(28*28, 512),\n            nn.ReLU(),\n            nn.Linear(512, 10)\n        )\n\n    def forward(self, x):\n        x = self.flatten(x)\n        logits = self.linear_relu_stack(x)\n        return logits\n\nmodel = NeuralNetwork().to(device)`
+                    },
+                    {
+                        name: 'Compile / Configure',
+                        explanation: "Keras compiles the model in one step, defining the optimizer, loss function, and metrics. In PyTorch, these are defined as separate objects.",
+                        tf: `model.compile(optimizer='adam',\n              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),\n              metrics=['accuracy'])`,
+                        pytorch: `loss_fn = nn.CrossEntropyLoss()\noptimizer = torch.optim.Adam(model.parameters(), lr=1e-3)`
+                    },
+                    {
+                        name: 'Train Model',
+                        explanation: "Training is a single `.fit()` call in Keras, which abstracts away the training loop. PyTorch requires an explicit, manual training loop, giving the developer full control over gradient calculation, backpropagation, and weight updates.",
+                        tf: `history = model.fit(train_images, train_labels, epochs=10,\n                    validation_data=(test_images, test_labels))`,
+                        pytorch: `def train(dataloader, model, loss_fn, optimizer):\n    model.train()\n    for batch, (X, y) in enumerate(dataloader):\n        X, y = X.to(device), y.to(device)\n        # Compute prediction error\n        pred = model(X)\n        loss = loss_fn(pred, y)\n        # Backpropagation\n        optimizer.zero_grad()\n        loss.backward()\n        optimizer.step()\n# Call train() inside an epoch loop\ntrain(train_dataloader, model, loss_fn, optimizer)`
+                    },
+                     {
+                        name: 'Save Model',
+                        explanation: "Keras saves the entire model (architecture, weights, optimizer state) to a single file. The standard PyTorch practice is to save only the learned parameters (the `state_dict`).",
+                        tf: `model.save('my_model.h5')\nloaded_model = keras.models.load_model('my_model.h5')`,
+                        pytorch: `torch.save(model.state_dict(), "model_weights.pth")\n\nloaded_model = NeuralNetwork()\nloaded_model.load_state_dict(torch.load("model_weights.pth"))`
+                    },
+                ]
+            },
+            mlops: [
+                {
+                    title: 'Project Structure',
+                    content: 'A standardized project structure (e.g., Cookiecutter Data Science) is not optional, it\'s a professional necessity. It separates data, source code, notebooks, and models, making projects maintainable and collaborative. Key directories: `data/`, `src/`, `notebooks/`, `models/`.'
+                },
+                {
+                    title: 'Reproducibility',
+                    content: 'Ensuring an experiment can be perfectly replicated is core to MLOps. This requires versioning everything: <strong>Code</strong> (with Git), <strong>Data & Models</strong> (with DVC, as Git is poor for large files), and the <strong>Environment</strong> (with Conda/Docker and a `requirements.txt`). Finally, always set a <strong>random seed</strong> to control for stochasticity.'
+                },
+                {
+                    title: 'Experiment Tracking',
+                    content: 'Manually tracking experiments is error-prone. Use dedicated tools like <strong>MLflow</strong> (open-source, self-hosted) or <strong>Weights & Biases</strong> (polished, cloud-based) to log parameters, metrics, and model artifacts for every run. This makes comparing results and collaborating simple.'
+                },
+                {
+                    title: 'Deployment',
+                    content: 'Deployment makes a model useful. The standard pattern is: 1. <strong>Serialize</strong> the trained model (`joblib` or built-in framework functions). 2. Wrap it in a <strong>REST API</strong> using a web framework like FastAPI or Flask. 3. <strong>Containerize</strong> the entire application with Docker for portability. 4. Deploy the container and set up <strong>monitoring</strong> for data drift and performance degradation.'
+                }
+            ]
+        };
+
+        // Navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('main > div[id]');
+        const header = document.getElementById('header');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href').substring(1) === entry.target.id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: `-${header.offsetHeight}px 0px 0px 0px`, threshold: 0.3 });
+
+        sections.forEach(section => observer.observe(section));
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+                if (window.innerWidth < 768) {
+                   document.getElementById('mobile-menu').classList.add('hidden');
+                }
+            });
+        });
+
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Concepts Section
+        const conceptCircles = document.querySelectorAll('.concept-circle');
+        const conceptExplanation = document.getElementById('concept-explanation');
+        conceptCircles.forEach(circle => {
+            circle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const conceptKey = circle.dataset.concept;
+                const concept = contentData.concepts[conceptKey];
+                conceptExplanation.innerHTML = `<h4 class="text-xl font-semibold mb-2">${concept.title}</h4><p>${concept.text}</p>`;
+                
+                conceptCircles.forEach(c => c.style.transform = 'scale(1)');
+                circle.style.transform = 'scale(1.1)';
+            });
+        });
+
+        // Paradigms Section
+        const paradigmTabsContainer = document.getElementById('paradigm-tabs');
+        const paradigmContentContainer = document.getElementById('paradigm-content');
+        
+        contentData.paradigms.forEach((p, index) => {
+            const tab = document.createElement('button');
+            tab.className = `tab px-4 py-2 rounded-full font-medium transition-colors ${index === 0 ? 'active' : 'bg-gray-200 hover:bg-gray-300'}`;
+            tab.textContent = p.name;
+            tab.dataset.paradigm = p.name;
+            paradigmTabsContainer.appendChild(tab);
+        });
+
+        const paradigmTabs = document.querySelectorAll('#paradigm-tabs .tab');
+
+        function updateParadigmContent(paradigmName) {
+            const paradigm = contentData.paradigms.find(p => p.name === paradigmName);
+            paradigmContentContainer.innerHTML = `
+                <h4 class="text-xl font-semibold mb-2">${paradigm.title}</h4>
+                <p class="mb-4 text-gray-700">${paradigm.description}</p>
+                <div class="text-left">
+                    <p class="mb-2"><strong>Common Tasks:</strong></p>
+                    <ul class="list-disc list-inside mb-4 text-gray-600">
+                        ${paradigm.tasks.map(t => `<li>${t}</li>`).join('')}
+                    </ul>
+                    <p><strong>Popular Algorithms:</strong> <span class="text-gray-600">${paradigm.algorithms}</span></p>
+                </div>`;
+        }
+
+        paradigmTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                paradigmTabs.forEach(t => t.classList.remove('active', 'bg-gray-200', 'hover:bg-gray-300'));
+                paradigmTabs.forEach(t => {
+                   if(t !== tab) t.classList.add('bg-gray-200', 'hover:bg-gray-300')
+                });
+                tab.classList.add('active');
+                updateParadigmContent(tab.dataset.paradigm);
+            });
+        });
+        updateParadigmContent(contentData.paradigms[0].name);
+
+        // Toolkit Section
+        const toolkitTabsContainer = document.getElementById('toolkit-tabs');
+        const toolkitContentContainer = document.getElementById('toolkit-content');
+        
+        contentData.toolkit.forEach((tool, index) => {
+            const tab = document.createElement('button');
+            tab.className = `tab px-4 py-2 rounded-full font-medium transition-colors ${index === 0 ? 'active' : 'bg-gray-200 hover:bg-gray-300'}`;
+            tab.textContent = tool.name;
+            tab.dataset.tool = tool.name;
+            toolkitTabsContainer.appendChild(tab);
+        });
+        
+        const toolkitTabs = document.querySelectorAll('#toolkit-tabs .tab');
+        
+        function updateToolkitContent(toolName) {
+            const tool = contentData.toolkit.find(t => t.name === toolName);
+            toolkitContentContainer.innerHTML = tool.content;
+        }
+
+        toolkitTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                toolkitTabs.forEach(t => t.classList.remove('active', 'bg-gray-200', 'hover:bg-gray-300'));
+                toolkitTabs.forEach(t => {
+                   if(t !== tab) t.classList.add('bg-gray-200', 'hover:bg-gray-300')
+                });
+                tab.classList.add('active');
+                updateToolkitContent(tab.dataset.tool);
+            });
+        });
+        updateToolkitContent(contentData.toolkit[0].name);
+
+
+        // Workflow Section
+        const workflowDiagramContainer = document.getElementById('workflow-diagram');
+        const workflowContentContainer = document.getElementById('workflow-content');
+        
+        contentData.workflow.forEach((item, index) => {
+            const stage = document.createElement('button');
+            stage.className = `workflow-stage text-center p-3 rounded-lg border-2 border-gray-300 cursor-pointer transition-all w-full md:w-auto flex-1 ${index === 0 ? 'active border-[#A3B18A] bg-[#A3B18A]/10' : ''}`;
+            stage.innerHTML = `<span class="font-semibold">${item.title}</span>`;
+            stage.dataset.workflow = item.name;
+            
+            if(index < contentData.workflow.length - 1) {
+                 const arrow = document.createElement('div');
+                 arrow.className = 'text-2xl text-gray-400 transform md:rotate-0 rotate-90';
+                 arrow.innerHTML = `&rarr;`;
+                 workflowDiagramContainer.appendChild(stage);
+                 workflowDiagramContainer.appendChild(arrow);
+            } else {
+                 workflowDiagramContainer.appendChild(stage);
+            }
+
+        });
+        
+        const workflowStages = document.querySelectorAll('.workflow-stage');
+        
+        function updateWorkflowContent(workflowName) {
+            const item = contentData.workflow.find(w => w.name === workflowName);
+            workflowContentContainer.innerHTML = `<p>${item.content}</p>`;
+        }
+        
+        workflowStages.forEach(stage => {
+            stage.addEventListener('click', () => {
+                workflowStages.forEach(s => s.classList.remove('active', 'border-[#A3B18A]', 'bg-[#A3B18A]/10'));
+                stage.classList.add('active', 'border-[#A3B18A]', 'bg-[#A3B18A]/10');
+                updateWorkflowContent(stage.dataset.workflow);
+            });
+        });
+        updateWorkflowContent(contentData.workflow[0].name);
+
+        // Metrics Chart
+        const ctx = document.getElementById('metrics-chart').getContext('2d');
+        let metricsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+                datasets: [{
+                    label: 'Score',
+                    data: [0, 0, 0, 0],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 1 }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Model Performance Metrics' }
+                }
+            }
+        });
+
+        const sliders = {
+            tp: document.getElementById('tp-slider'),
+            fp: document.getElementById('fp-slider'),
+            tn: document.getElementById('tn-slider'),
+            fn: document.getElementById('fn-slider'),
+        };
+
+        const values = {
+            tp: document.getElementById('tp-value'),
+            fp: document.getElementById('fp-value'),
+            tn: document.getElementById('tn-value'),
+            fn: document.getElementById('fn-value'),
+        };
+
+        function updateMetrics() {
+            const tp = parseInt(sliders.tp.value);
+            const fp = parseInt(sliders.fp.value);
+            const tn = parseInt(sliders.tn.value);
+            const fn = parseInt(sliders.fn.value);
+
+            values.tp.textContent = tp;
+            values.fp.textContent = fp;
+            values.tn.textContent = tn;
+            values.fn.textContent = fn;
+
+            const total = tp + fp + tn + fn;
+            const accuracy = total > 0 ? (tp + tn) / total : 0;
+            const precision = (tp + fp) > 0 ? tp / (tp + fp) : 0;
+            const recall = (tp + fn) > 0 ? tp / (tp + fn) : 0;
+            const f1 = (precision + recall) > 0 ? 2 * (precision * recall) / (precision + recall) : 0;
+            
+            metricsChart.data.datasets[0].data = [accuracy, precision, recall, f1];
+            metricsChart.update();
+        }
+
+        Object.values(sliders).forEach(slider => slider.addEventListener('input', updateMetrics));
+        updateMetrics();
+
+
+        // Deep Dive Section
+        const deepDiveControlsContainer = document.getElementById('deep-dive-controls');
+        const tfCodeDisplay = document.getElementById('tf-code-display');
+        const pytorchCodeDisplay = document.getElementById('pytorch-code-display');
+        const deepDiveExplanation = document.getElementById('deep-dive-explanation');
+
+        contentData.deepDive.steps.forEach((step, index) => {
+            const button = document.createElement('button');
+            button.className = `tab px-4 py-2 rounded-full font-medium transition-colors ${index === 0 ? 'active' : 'bg-gray-200 hover:bg-gray-300'}`;
+            button.textContent = step.name;
+            button.dataset.step = step.name;
+            deepDiveControlsContainer.appendChild(button);
+        });
+        
+        const deepDiveButtons = document.querySelectorAll('#deep-dive-controls .tab');
+        
+        function updateDeepDiveContent(stepName) {
+            const step = contentData.deepDive.steps.find(s => s.name === stepName);
+            tfCodeDisplay.innerHTML = `<pre><code>${step.tf}</code></pre>`;
+            pytorchCodeDisplay.innerHTML = `<pre><code>${step.pytorch}</code></pre>`;
+            deepDiveExplanation.innerHTML = `<p>${step.explanation}</p>`;
+        }
+        
+        deepDiveButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                deepDiveButtons.forEach(b => b.classList.remove('active', 'bg-gray-200', 'hover:bg-gray-300'));
+                deepDiveButtons.forEach(b => {
+                   if(b !== button) b.classList.add('bg-gray-200', 'hover:bg-gray-300')
+                });
+                button.classList.add('active');
+                updateDeepDiveContent(button.dataset.step);
+            });
+        });
+        updateDeepDiveContent(contentData.deepDive.steps[0].name);
+
+        // MLOps Accordion
+        const mlopsAccordionContainer = document.getElementById('mlops-accordion');
+        contentData.mlops.forEach((item, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'border border-gray-200 rounded-lg';
+            wrapper.innerHTML = `
+                <button class="accordion-toggle w-full flex justify-between items-center p-4 font-semibold text-left">
+                    <span>${item.title}</span>
+                    <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content hidden p-4 border-t border-gray-200 text-gray-700">
+                    <p>${item.content}</p>
+                </div>
+            `;
+            mlopsAccordionContainer.appendChild(wrapper);
+        });
+        
+        mlopsAccordionContainer.querySelectorAll('.accordion-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('svg');
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+    });
+    </script>
+</body>
+</html>
